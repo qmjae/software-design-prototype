@@ -5,31 +5,39 @@ from PIL import Image, ImageOps
 import numpy as np
 import requests
 from io import BytesIO
+from ultralytics import YOLO  # For YOLOv8
+# Import other necessary libraries for Mask-RCNN and EfficientDet
 
-# Function to load the model
+# Function to load the models
 @st.cache(allow_output_mutation=True)
-def load_model():
-    model = tf.keras.models.load_model('fmodel.h5')
+def load_yolo_model():
+    model = YOLO('yolov8-solar.pt')
     return model
 
-@st.cache
-def load_image(image_url):
-    response = requests.get(image_url)
-    image = Image.open(BytesIO(response.content))
-    return image
-    
-model = load_model()
+@st.cache(allow_output_mutation=True)
+def load_maskrcnn_model():
+    # Load your Mask-RCNN model here
+    pass
+
+@st.cache(allow_output_mutation=True)
+def load_efficientdet_model():
+    # Load your EfficientDet model here
+    pass
+
+# Load models
+yolo_model = load_yolo_model()
+# maskrcnn_model = load_maskrcnn_model()
+# efficientdet_model = load_efficientdet_model()
 
 # Navigation Bar
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Guide", "About", "Links"])
+page = st.sidebar.radio("Go to", ["YOLOv8", "Mask-RCNN", "EfficientDet", "About", "Links"])
 
-# Home Page
-if page == "Home":
+# YOLOv8 Page
+if page == "YOLOv8":
     st.markdown(
     """
     <style>
-    /* Add a border around the title */
     .title-container {
         border: 2px solid #f63366;
         border-radius: 5px;
@@ -40,23 +48,12 @@ if page == "Home":
     </style>
     """,
     unsafe_allow_html=True
-)
+    )
 
-    st.markdown("<div class='title-container'><h1>Brain Tumor MRI Classification</h1></div>", unsafe_allow_html=True)
+    st.markdown("<div class='title-container'><h1>Solar Panel Detection - YOLOv8</h1></div>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # File Uploader
-    file = st.file_uploader("Choose a Brain MRI image", type=["jpg", "png"])
-    
-    # Function to make predictions
-    def import_and_predict(image_data, model):
-        size = (150, 150)  
-        image = ImageOps.fit(image_data, size, PIL.Image.LANCZOS) 
-        img = np.asarray(image)
-        img = img / 255.0  
-        img_reshape = img[np.newaxis, ...]
-        prediction = model.predict(img_reshape)
-        return prediction
+    file = st.file_uploader("Choose an image", type=["jpg", "png"], key="yolo_uploader")
     
     if file is None:
         st.text("Please upload an image file")
@@ -71,69 +68,95 @@ if page == "Home":
                 unsafe_allow_html=True
             )
             
-            prediction = import_and_predict(image, model)
-            class_names = ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+            # YOLOv8 prediction
+            results = yolo_model(image)
+            # Process and display results
+            st.image(results[0].plot(), use_column_width=True)
             
-            # Display confidence levels
-            confidence_levels = {class_name: round(float(pred), 4) for class_name, pred in zip(class_names, prediction[0])}
-            st.write("Confidence levels:")
-            for class_name, confidence in confidence_levels.items():
-                st.write(f"{class_name}: {confidence * 100:.2f}%")
-            
-            # Display the most likely class
-            string = "OUTPUT : " + class_names[np.argmax(prediction)]
-            st.success(string)
         except Exception as e:
-            st.error("Error: Please upload an image file with one of the following formats: .JPG, .PNG, or .JPEG")
+            st.error(f"Error: {str(e)}")
 
+# Mask-RCNN Page
+elif page == "Mask-RCNN":
+    st.markdown(
+    """
+    <style>
+    .title-container {
+        border: 2px solid #f63366;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
 
-# Names Page
-elif page == "Guide":
-    st.title("Guide")
+    st.markdown("<div class='title-container'><h1>Solar Panel Detection - Mask-RCNN</h1></div>", unsafe_allow_html=True)
     st.markdown("---")
-    st.write("This page displays the names of the classes that the model can classify:")
-    st.markdown("---")
-    st.write("- Glioma")
-    glioma_image = load_image("https://drive.google.com/uc?export=view&id=1_dHlhzdvtZxzPKiby1w9N__R9uPrAXUP")
-    st.image(glioma_image, use_column_width=True)
-    st.markdown("---")
-    st.write("- Meningioma")
-    meningioma_image = load_image("https://drive.google.com/uc?export=view&id=1gCTR9Oe4zuE3SDojoqYPMPwOupfSA9Lf")
-    st.image(meningioma_image, use_column_width=True)
-    st.markdown("---")
-    st.write("- No Tumor")
-    no_tumor_image = load_image("https://drive.google.com/uc?export=view&id=1JqI8bUEW6P3PyYfGsudr_0oMxekgYLDy")
-    st.image(no_tumor_image, use_column_width=True)
-    st.markdown("---")
-    st.write("- Pituitary")
-    pituitary_image = load_image("https://drive.google.com/uc?export=view&id=1gLzYhPu_P-ZZybapSBEE_mzTymFCd7FP")
-    st.image(pituitary_image, use_column_width=True)
-    st.markdown("---")
+
+    file = st.file_uploader("Choose an image", type=["jpg", "png"], key="maskrcnn_uploader")
     
+    if file is None:
+        st.text("Please upload an image file")
+    else:
+        try:
+            image = Image.open(file)
+            st.image(image, use_column_width=True, output_format='JPEG')
+            
+            # Add Mask-RCNN prediction code here
+            
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+# EfficientDet Page
+elif page == "EfficientDet":
+    st.markdown(
+    """
+    <style>
+    .title-container {
+        border: 2px solid #f63366;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.markdown("<div class='title-container'><h1>Solar Panel Detection - EfficientDet</h1></div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    file = st.file_uploader("Choose an image", type=["jpg", "png"], key="efficientdet_uploader")
+    
+    if file is None:
+        st.text("Please upload an image file")
+    else:
+        try:
+            image = Image.open(file)
+            st.image(image, use_column_width=True, output_format='JPEG')
+            
+            # Add EfficientDet prediction code here
+            
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
 # About Page
 elif page == "About":
     st.title("About")
     st.markdown("---")
-    st.write("This is a simple web application that classifies Brain MRI images into four categories: Glioma, Meningioma, No Tumor, and Pituitary Tumor.")
-    st.write("It uses a deep learning model trained on MRI images to make predictions. It has an evaluated accuracy of 92%.")
+    st.write("This is a web application that implements three different deep learning models for solar panel detection:")
+    st.write("- YOLOv8")
+    st.write("- Mask-RCNN")
+    st.write("- EfficientDet")
     st.markdown("---")
-    st.header("Group 3 - CPE 019-CPE32S6")
-    st.markdown("---")
-    st.write("Ejercito, Marlon Jason")
-    st.write("Flores, Mico Joshua")
-    st.write("Flores, Marc Oliver")
-    st.write("Gabiano, Chris Leonard")
-    st.write("Gomez, Joram")
-    st.markdown("---")
+    st.header("Created by")
+    # Add your team information here
 
 elif page == "Links":
     st.title("Links")
     st.markdown("---")
-    st.header("Github Link")
-    st.write("[Click Here](https://github.com/qmjae/Brain-Tumor-MRI-Classification-using-Streamlit)")
-    st.header("Google Colaboratory Link")
-    st.write("[Click Here](https://colab.research.google.com/drive/1voRF5tQ49C45BU7mJRV8wBKjji_YANz5?usp=sharing)")
-    st.header("Google Drive Link")
-    st.write("[Click Here](https://drive.google.com/drive/folders/1MExGDFt6MVJunB97RloUM7sNb3rudecz?usp=sharing)")
-    st.header("Sample Images for Testing")
-    st.write("[Click Here](https://drive.google.com/drive/folders/1gL6A_zjZQDYCsw8UpP-wvto6HKScBMuk?usp=drive_link)")
+    # Add your relevant links here
