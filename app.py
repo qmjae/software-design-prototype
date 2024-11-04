@@ -153,17 +153,4 @@ elif page == "About":
     st.write("- Mask-RCNN")
     st.write("- EfficientDet")
     st.markdown("---")
-    st.header("Created by")
-    # Add your team information here
 
-elif page == "Links":
-    st.title("Links")
-    st.markdown("---")
-    st.header("Github Link")
-    st.write("[Click Here](https://github.com/qmjae/Brain-Tumor-MRI-Classification-using-Streamlit)")
-    st.header("Google Colaboratory Link")
-    st.write("[Click Here](https://colab.research.google.com/drive/1voRF5tQ49C45BU7mJRV8wBKjji_YANz5?usp=sharing)")
-    st.header("Google Drive Link")
-    st.write("[Click Here](https://drive.google.com/drive/folders/1MExGDFt6MVJunB97RloUM7sNb3rudecz?usp=sharing)")
-    st.header("Sample Images for Testing")
-    st.write("[Click Here](https://drive.google.com/drive/folders/1gL6A_zjZQDYCsw8UpP-wvto6HKScBMuk?usp=drive_link)")
